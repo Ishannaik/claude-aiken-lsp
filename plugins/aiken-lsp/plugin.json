@@ -1,0 +1,32 @@
+{
+  "name": "aiken-lsp",
+  "version": "1.0.0",
+  "description": "Aiken language server integration for Claude Code. Spawns 'aiken lsp --stdio' and forwards LSP messages for .ak Cardano smart contract files.",
+  "author": {
+    "name": "Ishan Naik"
+  },
+  "homepage": "https://github.com/Ishannaik/claude-aiken-lsp",
+  "license": "MIT",
+  "keywords": [
+    "aiken",
+    "cardano",
+    "lsp",
+    "language-server",
+    "smart-contracts",
+    "plutus"
+  ],
+  "category": "development",
+  "lspServers": {
+    "aiken": {
+      "command": "aiken",
+      "args": [
+        "lsp",
+        "--stdio"
+      ],
+      "transport": "stdio",
+      "extensionToLanguage": {
+        ".ak": "aiken"
+      }
+    }
+  }
+}

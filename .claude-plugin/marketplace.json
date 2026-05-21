@@ -1,0 +1,44 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-aiken-lsp",
+  "description": "Claude Code marketplace providing the Aiken language server (aiken lsp --stdio) for .ak Cardano smart contract files.",
+  "owner": {
+    "name": "Ishan Naik"
+  },
+  "plugins": [
+    {
+      "name": "aiken-lsp",
+      "version": "1.0.0",
+      "description": "Aiken language server integration for Claude Code. Spawns 'aiken lsp --stdio' and forwards LSP messages for .ak Cardano smart contract files.",
+      "author": {
+        "name": "Ishan Naik"
+      },
+      "category": "development",
+      "tags": [
+        "aiken",
+        "cardano",
+        "lsp",
+        "language-server",
+        "smart-contracts",
+        "plutus"
+      ],
+      "source": "./plugins/aiken-lsp",
+      "homepage": "https://github.com/Ishannaik/claude-aiken-lsp",
+      "license": "MIT",
+      "strict": false,
+      "lspServers": {
+        "aiken": {
+          "command": "aiken",
+          "args": [
+            "lsp",
+            "--stdio"
+          ],
+          "transport": "stdio",
+          "extensionToLanguage": {
+            ".ak": "aiken"
+          }
+        }
+      }
+    }
+  ]
+}
