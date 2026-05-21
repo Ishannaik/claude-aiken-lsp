@@ -34,6 +34,10 @@
             "--stdio"
           ],
           "transport": "stdio",
+          "workspaceFolder": "${CLAUDE_PROJECT_DIR}",
+          "restartOnCrash": true,
+          "maxRestarts": 5,
+          "startupTimeout": 10000,
           "extensionToLanguage": {
             ".ak": "aiken"
           }

@@ -49,6 +49,10 @@ This plugin declares an LSP server entry inside its `plugin.json` /
     "command": "aiken",
     "args": ["lsp", "--stdio"],
     "transport": "stdio",
+    "workspaceFolder": "${CLAUDE_PROJECT_DIR}",
+    "restartOnCrash": true,
+    "maxRestarts": 5,
+    "startupTimeout": 10000,
     "extensionToLanguage": {
       ".ak": "aiken"
     }
@@ -60,25 +64,83 @@ When Claude Code's `LSP` tool is invoked against a `.ak` file, it:
 
 1. Looks up the language for the extension (`.ak` -> `aiken`).
 2. Spawns `aiken lsp --stdio` as a child process if it is not already running.
-3. Forwards `initialize`, `textDocument/didOpen`,
-   `textDocument/documentSymbol`, `textDocument/hover`,
-   `textDocument/definition`, `textDocument/references`, diagnostics, etc.
+3. Forwards `initialize`, `textDocument/didOpen`, and the LSP requests
+   listed under **Supported operations** below.
 
 The language identifier `"aiken"` matches what the official
 [`txpipe/vscode-aiken`](https://github.com/txpipe/vscode-aiken) extension uses,
 which is what the Aiken language server expects on incoming
 `textDocument/didOpen` notifications.
 
+The `workspaceFolder` is set to `${CLAUDE_PROJECT_DIR}` so the Aiken
+compiler can find your project's `aiken.toml`. `restartOnCrash` and
+`maxRestarts` make the server self-heal if a single bad request kills it
+(see **Known limitations** below).
+
+## Supported operations
+
+The Aiken language server (as of `aiken v1.1.22`) implements a subset of
+the LSP. The matrix below maps Claude Code's `LSP` tool operations to
+their underlying LSP requests and Aiken's support status:
+
+| Claude Code `LSP` operation | LSP request                  | Aiken support |
+| :-------------------------- | :--------------------------- | :------------ |
+| `hover`                     | `textDocument/hover`         | yes           |
+| `definition`                | `textDocument/definition`    | yes           |
+| `codeAction`                | `textDocument/codeAction`    | yes (declared) |
+| `formatting`                | `textDocument/formatting`    | yes           |
+| `diagnostics`               | `textDocument/publishDiagnostics` (server-pushed) | yes |
+| `references`                | `textDocument/references`    | **not supported** — see below |
+| `documentSymbol`            | `textDocument/documentSymbol`| **not supported** — see below |
+| `workspaceSymbol`           | `workspace/symbol`           | **not supported** — see below |
+| `completion`                | `textDocument/completion`    | not implemented (server times out) |
+| `implementation`            | `textDocument/implementation`| not implemented |
+| `typeDefinition`            | `textDocument/typeDefinition`| not implemented |
+| `callHierarchy`             | `textDocument/prepareCallHierarchy` | not implemented |
+
+The Aiken language server declares its actual capabilities in its
+`initialize` response — only `hoverProvider`, `definitionProvider`,
+`codeActionProvider`, and `documentFormattingProvider` are advertised.
+A well-behaved LSP client respects that response and avoids dispatching
+unsupported requests; the matrix above is provided so users know which
+of Claude Code's LSP operations will actually return useful data.
+
+## Known limitations
+
+**Unsupported requests crash the server.** Versions of `aiken` up to and
+including v1.1.22 do not return a standard LSP error response when they
+receive a request method they do not implement. Instead they exit the
+process with code 1. If Claude Code's `LSP` tool sends one of these
+methods (`textDocument/documentSymbol`, `textDocument/references`,
+`workspace/symbol`), the server dies and the tool surfaces the failure
+as an internal error.
+
+This plugin sets `restartOnCrash: true` and `maxRestarts: 5` so the
+server is automatically respawned for the next request, but any
+in-flight unsupported call is lost. If you hit this, retry with one of
+the supported operations from the table above.
+
+Upstream tracking: <https://github.com/aiken-lang/aiken/issues>. The
+ideal upstream fix is for `aiken lsp --stdio` to respond to unsupported
+methods with a JSON-RPC `MethodNotFound` (`-32601`) error per the LSP
+spec rather than exiting.
+
 ## Verification
 
 After restart, open any `.ak` file in your project and ask Claude Code to use
-its LSP tool on it, e.g.:
+its LSP tool on it. Use one of the supported operations from the matrix
+above — for example:
 
-> Use the LSP tool to list the document symbols for `validators/pool_vault.ak`.
+> Use the LSP tool to get the hover info at line N of
+> `validators/<your-validator>.ak`.
 
-You should get a structured `documentSymbol` response describing validators,
-functions, and types in the file. If you instead get
-`No LSP server available for this file`, see Troubleshooting below.
+> Use the LSP tool to jump to the definition of `<some symbol>` in
+> `validators/<your-validator>.ak`.
+
+You should get back type information or a definition location. If you
+instead get `No LSP server available for this file`, see Troubleshooting
+below. If you ask for `documentSymbol` or `references` you will hit the
+limitation documented under **Known limitations**.
 
 ## Troubleshooting
 
