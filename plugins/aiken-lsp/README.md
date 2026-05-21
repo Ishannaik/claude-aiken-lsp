@@ -87,12 +87,10 @@ shell. The plugin invokes the bare command `aiken`; it does not resolve PATH
 overrides from `~/.bashrc` or similar files that are not sourced by Claude
 Code's launch environment.
 
-**Windows-without-PATH fallback** — if you have Aiken installed but it is not
-on your global `PATH` (e.g. it lives at
-`C:/Users/<you>/Projects/Dream/.tools/aiken/aiken.exe`), the simplest fix is to
-add that directory to your user `PATH` environment variable in Windows
-Settings. Alternatively you can fork this plugin and replace the `command`
-field in `marketplace.json` with the absolute path to `aiken.exe`.
+**Windows-without-PATH fallback** — if Aiken is installed but not on your
+global `PATH`, add its directory to your user `PATH` environment variable
+in Windows Settings. Alternatively, fork this plugin and replace the
+`command` field in `marketplace.json` with the absolute path to `aiken.exe`.
 
 **Language server crashes immediately** — run `aiken lsp --stdio` manually in
 a terminal; the process should sit waiting for LSP input on stdin. If it exits
