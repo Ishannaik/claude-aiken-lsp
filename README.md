@@ -36,7 +36,8 @@ claude-aiken-lsp/
 │   └── marketplace.json       # marketplace manifest (lists aiken-lsp)
 ├── plugins/
 │   └── aiken-lsp/
-│       ├── plugin.json        # plugin manifest (LSP server declaration)
+│       ├── .claude-plugin/
+│       │   └── plugin.json    # plugin manifest (LSP server declaration)
 │       └── README.md          # plugin-specific docs
 ├── LICENSE                    # MIT, Ishan Naik 2026
 └── README.md                  # you are here
